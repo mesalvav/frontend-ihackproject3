@@ -1,8 +1,14 @@
 import React from 'react';
 
 import './App.css';
+import axios from 'axios';
 
 import AuthService from './services/AuthService.js';
+import Navbar from './components/navbar/Navbar.js';
+import {Route, Switch} from 'react-router-dom';
+import ProjectIndex from './components/projectindex/ProjectIndex.js';
+import Landing from './components/landing/Landing.js';
+import Signup from './components/signup/Signup.js';
 
 class App extends React.Component {
   // eslint-disable-next-line no-useless-constructor
@@ -10,12 +16,22 @@ class App extends React.Component {
     super(props)
     this.state = {
       userx: [],
-      ready: false
+      ready: false,
+      listOfProjects: [],
+      currentlyLoggedIn:null,
     }
     this.service = new AuthService();
   }
 
 
+  getAllProjects = () => {
+    axios.get(`http://localhost:5000/api/projects`, {withCredentials: true})
+    .then(responseFromApi => {
+      this.setState({
+        listOfProjects: responseFromApi.data, ready: true
+      })
+    })
+  }
 // 
 getuser = ()=>{
   this.service.currentUser()
@@ -28,8 +44,22 @@ getuser = ()=>{
   })
 }
 
+
+getCurrentlyLoggedInUser = () =>{
+  this.service.currentUser()
+  .then((theUser)=>{
+    this.setState({currentlyLoggedIn: theUser})
+  })
+  .catch(()=>{
+    this.setState({currentlyLoggedIn: null})
+  })
+}
+
+
 componentDidMount(){
   this.getuser(); 
+  this.getCurrentlyLoggedInUser();
+  this.getAllProjects();
 }
 
 showusers =  ()=> {
@@ -41,19 +71,26 @@ showusers =  ()=> {
 }
 
   render(){
-      // if( this.state.userx ) {
+     
       return (
         <div className="App">
-        <header className="App-header">
-          <h1>hello harcoded  in H1 tag</h1>
-          <h2> {this.showusers()}</h2>
-        </header>
+          <h2><Navbar></Navbar></h2>
+       <div><Signup getUser={this.getCurrentlyLoggedInUser}/></div>
+        <Switch>
+        
+          <Route exact path="/projects" render={(props)=><ProjectIndex
+          {...props}
+          allTheProjects={this.state.listOfProjects}
+        />}/>
+
+          <Route exact path="/" render={(props)=><Landing
+          {...props}
+        />}/>
+
+        </Switch>
       </div>
     );
-      // } 
-      // else {
-      //   return (<h1>loading.. </h1>)
-      // }
+     
   }
 }
 
