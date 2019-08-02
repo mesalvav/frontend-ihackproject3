@@ -9,13 +9,14 @@ import {Route, Switch} from 'react-router-dom';
 import ProjectIndex from './components/projectindex/ProjectIndex.js';
 import Landing from './components/landing/Landing.js';
 import Signup from './components/signup/Signup.js';
+import Login from './components/login/Login.js';
 
 class App extends React.Component {
   // eslint-disable-next-line no-useless-constructor
   constructor(props){
     super(props)
     this.state = {
-      userx: [],
+     
       ready: false,
       listOfProjects: [],
       currentlyLoggedIn:null,
@@ -32,23 +33,14 @@ class App extends React.Component {
       })
     })
   }
-// 
-getuser = ()=>{
-  this.service.currentUser()
-  .then((respondx)=>{
-    this.setState ({ userx: respondx, ready: true });
-    console.log(this.state.ready + "===== did mount>>>>  " + JSON.stringify(respondx));
-  })
-  .catch((err)=>{
-    console.log("did mount error  " + err);
-  })
-}
+
 
 
 getCurrentlyLoggedInUser = () =>{
   this.service.currentUser()
   .then((theUser)=>{
     this.setState({currentlyLoggedIn: theUser})
+    console.log("===>>>>>  " + JSON.stringify(this.state.currentlyLoggedIn));
   })
   .catch(()=>{
     this.setState({currentlyLoggedIn: null})
@@ -57,7 +49,7 @@ getCurrentlyLoggedInUser = () =>{
 
 
 componentDidMount(){
-  this.getuser(); 
+  // this.getuser(); 
   this.getCurrentlyLoggedInUser();
   this.getAllProjects();
 }
@@ -69,18 +61,29 @@ showusers =  ()=> {
     }</div>)
 
 }
+logmeoutplease = ()=>{
+  this.service.logout().then(()=>{
+    this.getCurrentlyLoggedInUser();
+    this.getAllProjects();
 
+  })
+}
   render(){
      
       return (
         <div className="App">
           <h2><Navbar></Navbar></h2>
        <div><Signup getUser={this.getCurrentlyLoggedInUser}/></div>
+       <div>== separator == </div>
+       <div><Login getUser={this.getCurrentlyLoggedInUser}/></div>
+       <div> +++++ </div>
+       <button onClick = {this.logmeoutplease } >Log Out </button>
         <Switch>
         
           <Route exact path="/projects" render={(props)=><ProjectIndex
           {...props}
           allTheProjects={this.state.listOfProjects}
+          loggeduser = {this.state.currentlyLoggedIn}
         />}/>
 
           <Route exact path="/" render={(props)=><Landing
